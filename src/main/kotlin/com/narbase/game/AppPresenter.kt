@@ -55,5 +55,26 @@ class AppPresenter : Presenter() {
         return null
     }
 
+    fun onHistoryButtonClicked(index: Int) {
+        if (historyEntries.isEmpty()) return
+        while (true) {
+            if (historyEntries.last() == index || historyEntries.isEmpty()) {
+                resetLastTurn()
+                return
+            }
+            resetLastTurn()
+        }
+    }
 
+    private fun resetLastTurn() {
+        if (historyEntries.isEmpty()) return
+        val lastTurn = historyEntries.last()
+        cells[lastTurn]?.let {
+            it.text = ""
+        }
+        historyEntries.remove(lastTurn)
+        view?.deleteLastButton()
+        flipTurn()
+        gameEnded = false
+    }
 }

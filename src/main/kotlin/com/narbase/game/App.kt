@@ -75,9 +75,17 @@ class AppView(private val appPresenter: AppPresenter) {
             button {
                 button.textContent = text
                 paddingTop = 8.px
+                onClick = {
+                    appPresenter.onHistoryButtonClicked(index)
+                }
             }
         }
     }
 
-
+    fun deleteLastButton() {
+        if (buttonsLayout?.children?.isNotEmpty() != true) return
+        buttonsLayout?.children?.last()?.let {
+            buttonsLayout?.removeChild(it)
+        }
+    }
 }
