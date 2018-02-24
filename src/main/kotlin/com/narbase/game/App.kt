@@ -23,22 +23,19 @@ class AppView(val appPresenter: AppPresenter) {
                 justifyContent = JustifyContent.Center
                 verticalLayout {
                     horizontalLayout {
-                        addCell(0)
-                        addCell(1)
-                        addCell(2)
-
+                        appPresenter.cells[0] = addCell(0)
+                        appPresenter.cells[1] = addCell(1)
+                        appPresenter.cells[2] = addCell(2)
                     }
                     horizontalLayout {
-                        addCell(3)
-                        addCell(4)
-                        addCell(5)
-
+                        appPresenter.cells[3] = addCell(3)
+                        appPresenter.cells[4] = addCell(4)
+                        appPresenter.cells[5] = addCell(5)
                     }
                     horizontalLayout {
-                        addCell(6)
-                        addCell(7)
-                        addCell(8)
-
+                        appPresenter.cells[3] = addCell(6)
+                        appPresenter.cells[4] = addCell(7)
+                        appPresenter.cells[5] = addCell(8)
                     }
                 }
                 verticalLayout {
@@ -53,17 +50,22 @@ class AppView(val appPresenter: AppPresenter) {
         }
     }
 
-    private fun LinearLayout.addCell(index: Int) {
+    private fun LinearLayout.addCell(index: Int): TextView? {
+        var cell: TextView? = null
         verticalLayout {
             width = 30.px
             height = 30.px
             background = if (index.rem(2) == 0) Color.rgb(220, 220, 220) else Color.white
             justifyContent = JustifyContent.Center
-            textView {
+            cell = textView {
                 width = matchParent
                 textSize = 18.px
                 textAlign = TextView.TextAlign.Center
             }
+            onClick = {
+                appPresenter.onCellClicked(index)
+            }
         }
+        return cell
     }
 }
