@@ -9,12 +9,14 @@ import com.narbase.kunafa.core.dimensions.independent.px
 import com.narbase.kunafa.core.drawable.Color
 
 fun main(args: Array<String>) {
-    AppView().setup()
+    val presenter = AppPresenter()
+    AppView(presenter).setup()
 }
 
-class AppView {
+class AppView(val appPresenter: AppPresenter) {
     fun setup() {
         page {
+            presenter = appPresenter
             horizontalLayout {
                 width = matchParent
                 margin = 16.px
