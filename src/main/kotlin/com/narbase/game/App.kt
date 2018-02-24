@@ -13,8 +13,10 @@ fun main(args: Array<String>) {
     AppView(presenter).setup()
 }
 
-class AppView(val appPresenter: AppPresenter) {
+class AppView(private val appPresenter: AppPresenter) {
+    private var buttonsLayout: LinearLayout? = null
     fun setup() {
+        appPresenter.view = this
         page {
             presenter = appPresenter
             horizontalLayout {
@@ -38,7 +40,7 @@ class AppView(val appPresenter: AppPresenter) {
                         appPresenter.cells[8] = addCell(8)
                     }
                 }
-                verticalLayout {
+                buttonsLayout = verticalLayout {
                     paddingStart = 16.px
                     width = 200.px
                     alignItems = Alignment.Center
@@ -67,4 +69,15 @@ class AppView(val appPresenter: AppPresenter) {
         }
         return cell
     }
+
+    fun addHistoryButton(text: String, index: Int) {
+        buttonsLayout?.apply {
+            button {
+                button.textContent = text
+                paddingTop = 8.px
+            }
+        }
+    }
+
+
 }

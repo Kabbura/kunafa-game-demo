@@ -5,8 +5,10 @@ import com.narbase.kunafa.core.components.View
 import com.narbase.kunafa.core.presenter.Presenter
 
 class AppPresenter : Presenter() {
+    var view: AppView? = null
     val cells = arrayOfNulls<TextView>(9)
     var statusTextView: TextView? = null
+    private val historyEntries = arrayListOf<Int>()
     private var turn = "X"
     private var gameEnded = false
 
@@ -18,12 +20,13 @@ class AppPresenter : Presenter() {
         val cell = cells[index]
         if (cell?.text?.isNotEmpty() == true || gameEnded) return
         cell?.text = turn
+        historyEntries.add(index)
+        view?.addHistoryButton("Reset: $turn at cell: $index", index)
         flipTurn()
         getWinner()?.let {
             statusTextView?.text = "$it is the winner!"
             gameEnded = true
         }
-
     }
 
     private fun flipTurn() {
@@ -46,12 +49,11 @@ class AppPresenter : Presenter() {
         winningCombinations.forEach {
             if (cells[it[0]]?.text?.isNotEmpty() == true &&
                     cells[it[0]]?.text == cells[it[1]]?.text &&
-                    cells[it[0]]?.text == cells[it[2]]?.text )
+                    cells[it[0]]?.text == cells[it[2]]?.text)
                 return cells[it[0]]?.text
         }
         return null
     }
-
 
 
 }
