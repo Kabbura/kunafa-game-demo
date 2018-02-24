@@ -33,17 +33,16 @@ class AppView(val appPresenter: AppPresenter) {
                         appPresenter.cells[5] = addCell(5)
                     }
                     horizontalLayout {
-                        appPresenter.cells[3] = addCell(6)
-                        appPresenter.cells[4] = addCell(7)
-                        appPresenter.cells[5] = addCell(8)
+                        appPresenter.cells[6] = addCell(6)
+                        appPresenter.cells[7] = addCell(7)
+                        appPresenter.cells[8] = addCell(8)
                     }
                 }
                 verticalLayout {
                     paddingStart = 16.px
                     width = 200.px
                     alignItems = Alignment.Center
-                    textView {
-                        text = "Turn: X player"
+                    appPresenter.statusTextView = textView {
                     }
                 }
             }
