@@ -1,6 +1,7 @@
 package com.narbase.game
 
 import com.narbase.kunafa.core.components.*
+import com.narbase.kunafa.core.components.layout.Alignment
 import com.narbase.kunafa.core.components.layout.JustifyContent
 import com.narbase.kunafa.core.components.layout.LinearLayout
 import com.narbase.kunafa.core.dimensions.dependent.matchParent
@@ -36,6 +37,14 @@ class AppView {
                         addCell(7)
                         addCell(8)
 
+                    }
+                }
+                verticalLayout {
+                    paddingStart = 16.px
+                    width = 200.px
+                    alignItems = Alignment.Center
+                    textView {
+                        text = "Turn: X player"
                     }
                 }
             }
