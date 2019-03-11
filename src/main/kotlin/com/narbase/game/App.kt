@@ -7,25 +7,41 @@ import com.narbase.kunafa.core.dimensions.dependent.matchParent
 import com.narbase.kunafa.core.dimensions.px
 import com.narbase.kunafa.core.drawable.Color
 import com.narbase.kunafa.core.lifecycle.LifecycleOwner
+import com.narbase.kunafa.core.lifecycle.Observable
 
 fun main(args: Array<String>) {
     page {
-        mount(AppComponent())
+        mount(AppComponent(AppViewModel()))
     }
 }
 
-class AppComponent : Component() {
+class AppComponent(private val appViewModel: AppViewModel) : Component() {
 
     private var statusTextView: TextView? = null
     private val cells = arrayOfNulls<Button>(9)
     private var buttonsLayout: LinearLayout? = null
-    private var turn = "X"
-
-    private val historyEntries = arrayListOf<Int>()
-    private var gameEnded = false
 
     override fun onViewMounted(lifecycleOwner: LifecycleOwner) {
-        statusTextView?.text = "Turn: $turn player"
+        setupObservers()
+        appViewModel.initializeState()
+    }
+
+    private fun setupObservers() {
+        appViewModel.statusText.observe {
+            statusTextView?.text = "$it"
+        }
+        appViewModel.cellsStateUpdated.observe { updateCells(appViewModel.cellsState) }
+        appViewModel.nextHistoryButtonText.observe {
+            it ?: return@observe
+            addHistoryButton(it.first, it.second)
+        }
+        appViewModel.deleteLastButtonEvent.observe { deleteLastButton() }
+    }
+
+    private fun updateCells(cellsState: Array<String?>?) {
+        cellsState?.forEachIndexed { index, text ->
+            cells[index]?.text = text
+        }
     }
 
     override fun View?.getView() = horizontalLayout {
@@ -52,13 +68,15 @@ class AppComponent : Component() {
                 cells[8] = addCell(8)
             }
         }
-        buttonsLayout = verticalLayout {
+        verticalLayout {
             style {
                 paddingRight = 16.px
                 width = 200.px
                 alignItems = Alignment.Center
             }
             statusTextView = textView {
+            }
+            buttonsLayout = verticalLayout {
             }
         }
     }
@@ -74,7 +92,7 @@ class AppComponent : Component() {
                 border = "none"
             }
             onClick = {
-                onCellClicked(index)
+                appViewModel.onCellClicked(index)
             }
         }
     }
@@ -87,7 +105,7 @@ class AppComponent : Component() {
                     marginTop = 8.px
                 }
                 onClick = {
-                    onHistoryButtonClicked(index)
+                    appViewModel.onHistoryButtonClicked(index)
                 }
             }
         }
@@ -99,22 +117,62 @@ class AppComponent : Component() {
             buttonsLayout?.removeChild(it)
         }
     }
+}
 
-    private fun onCellClicked(index: Int) {
-        val cell = cells[index]
-        if (cell?.text?.isNotEmpty() == true || gameEnded) return
-        cell?.text = turn
+class AppViewModel {
+    val statusText = Observable<String>()
+    val cellsStateUpdated = Observable<Unit>()
+    val cellsState = arrayOfNulls<String>(9)
+    val nextHistoryButtonText = Observable<Pair<String, Int>>()
+    val deleteLastButtonEvent = Observable<Unit>()
+
+    private var gameEnded = false
+    private val historyEntries = arrayListOf<Int>()
+    private var turn = "X"
+
+    fun initializeState() {
+        cellsStateUpdated.value = Unit
+        statusText.value = "Turn: $turn player"
+    }
+
+    fun onCellClicked(index: Int) {
+        val cell = cellsState[index] ?: ""
+        if (cell.isNotEmpty() || gameEnded) return
+        cellsState[index] = turn
+        cellsStateUpdated.value = Unit
         historyEntries.add(index)
-        addHistoryButton("Reset: $turn at cell: $index", index)
+        nextHistoryButtonText.value = ("Reset: $turn at cell: $index" to index)
         flipTurn()
         val winner = getWinner() ?: return
-        statusTextView?.text = "$winner is the winner!"
+        statusText.value = "$winner is the winner!"
         gameEnded = true
+    }
+
+    fun onHistoryButtonClicked(index: Int) {
+        if (historyEntries.isEmpty()) return
+        while (true) {
+            if (historyEntries.last() == index || historyEntries.isEmpty()) {
+                resetLastTurn()
+                cellsStateUpdated.value = Unit
+                return
+            }
+            resetLastTurn()
+        }
+    }
+
+    private fun resetLastTurn() {
+        if (historyEntries.isEmpty()) return
+        val lastTurn = historyEntries.last()
+        cellsState[lastTurn] = ""
+        historyEntries.remove(lastTurn)
+        deleteLastButtonEvent.value = Unit
+        flipTurn()
+        gameEnded = false
     }
 
     private fun flipTurn() {
         turn = if (turn == "X") "O" else "X"
-        statusTextView?.text = "Turn: $turn player"
+        statusText.value = "Turn: $turn player"
     }
 
     private val winningCombinations = arrayListOf(
@@ -130,34 +188,11 @@ class AppComponent : Component() {
 
     private fun getWinner(): String? {
         winningCombinations.forEach {
-            if (cells[it[0]]?.text?.isNotEmpty() == true &&
-                    cells[it[0]]?.text == cells[it[1]]?.text &&
-                    cells[it[0]]?.text == cells[it[2]]?.text)
-                return cells[it[0]]?.text
+            if (cellsState[it[0]]?.isNotEmpty() == true &&
+                    cellsState[it[0]] == cellsState[it[1]] &&
+                    cellsState[it[0]] == cellsState[it[2]])
+                return cellsState[it[0]]
         }
         return null
-    }
-
-    private fun onHistoryButtonClicked(index: Int) {
-        if (historyEntries.isEmpty()) return
-        while (true) {
-            if (historyEntries.last() == index || historyEntries.isEmpty()) {
-                resetLastTurn()
-                return
-            }
-            resetLastTurn()
-        }
-    }
-
-    private fun resetLastTurn() {
-        if (historyEntries.isEmpty()) return
-        val lastTurn = historyEntries.last()
-        cells[lastTurn]?.let {
-            it.text = ""
-        }
-        historyEntries.remove(lastTurn)
-        deleteLastButton()
-        flipTurn()
-        gameEnded = false
     }
 }
